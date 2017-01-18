@@ -98,7 +98,7 @@ def main():
                        tweet_counts)
 
     most_sources = source_of_tweet(c, conn)
-    source_chart(most_sources, users, save_dir)
+    tweet_source_pie(most_sources, users, save_dir)
 
     print('Finished in {} seconds.'.format(round((time.time()) - start), 3))
 
@@ -434,7 +434,7 @@ def retweet_pie(retweets, total, users, save_dir):
     colors = ['lightskyblue', 'lightgrey']
     explode = (0, 0.1)
 
-    fig1, ax1 = plt.subplots(111)
+    fig1, ax1 = plt.subplots()
     ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
             shadow=True, startangle=90, colors=colors)
     ax1.axis('equal')

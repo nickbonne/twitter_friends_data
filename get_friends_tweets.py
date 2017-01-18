@@ -81,12 +81,17 @@ def download_all(api, new_friends):
         if tweet.id_str not in tweet_ids:
 
             c.execute('''INSERT INTO tdump
-                     (tweet, username, tweet_date, tweet_id)
-                        VALUES(?,?,?,?)''',
-                         [tweet.text,
-                          tweet.user.screen_name,
-                          tweet.created_at,
-                          tweet.id_strd])
+                     (tweet,
+                      username,
+                      tweet_date,
+                      tweet_id,
+                      tweet_source)
+                            VALUES(?,?,?,?,?)''',
+                             [tweet.text,
+                              tweet.user.screen_name,
+                              tweet.created_at,
+                              tweet.id_strd,
+                              tweet.source])
 
     conn.commit()
 
@@ -108,12 +113,17 @@ def timeline_download(api):
         if tweet.id_str not in tweet_ids:
 
             c.execute('''INSERT INTO tdump
-                     (tweet, username, tweet_date, tweet_id)
-                        VALUES(?,?,?,?)''',
-                         [tweet.text,
-                          tweet.user.screen_name,
-                          tweet.created_at,
-                          tweet.id_strd])
+                     (tweet,
+                      username,
+                      tweet_date,
+                      tweet_id,
+                      tweet_source)
+                            VALUES(?,?,?,?,?)''',
+                             [tweet.text,
+                              tweet.user.screen_name,
+                              tweet.created_at,
+                              tweet.id_strd,
+                              tweet.source])
 
     conn.commit()
 
@@ -134,7 +144,7 @@ def check_friends(api):
     difference = []
 
     # find differences in friends lists
-    # return list of ids for use in 
+    # return list of ids for use in
     # download function
     for gf_name in gf_names:
 
@@ -158,8 +168,8 @@ if __name__ == '__main__':
                  (tweet TEXT,
                   username TEXT,
                   tweet_date TEXT,
-                  tweet_id TEXT
-                  )''')
+                  tweet_id TEXT,
+                  tweet_source TEXT)''')
 
     consumer_key = parser.get('Keys', 'consumer_key')
     consumer_secret = parser.get('Secrets', 'consumer_secret')
