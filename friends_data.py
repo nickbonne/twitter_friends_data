@@ -97,6 +97,9 @@ def main():
                        tweet_dates,
                        tweet_counts)
 
+    most_sources = source_of_tweet(c, conn)
+    source_chart(most_sources, users, save_dir)
+
     print('Finished in {} seconds.'.format(round((time.time()) - start), 3))
 
 # counts number of tweets from each friend
@@ -566,6 +569,65 @@ def rt_times(c, conn):
 
     return rt_time_counts
 
+
+# counts number of sources tweets originate
+# from and number of times each is used
+def source_of_tweet(c, conn):
+
+    c.execute('SELECT tweet_source FROM tdump')
+    all_sources = c.fetchall()
+    all_sources = [source[0] for source in all_sources]
+
+    source_counts = []
+    seen_sources = []
+
+    for source in all_sources:
+
+        if source not in seen_sources:
+
+            counted = all_sources.count(source)
+            source_counts.append([source.strip(), counted])
+            seen_sources.append(source)
+
+    finish(source_counts, 'tweet_sources')
+
+    return source_counts
+
+
+# top 14 tweet sources plus other(the rest)
+def tweet_source_pie(source_data, users, save_dir):
+
+    counted, counts = zip(*source_data)
+
+    counted = list(counted[:14])  # first 14 sources kept
+    counted.append('Others')  # rest grouped as 'others'
+    # sum of 15-end of uses of 'others'
+    other_counts = sum(counts[15:])
+    counts = list(counts[:14]) # first 14 count nums kept
+    counts.append(other_counts)
+
+    labels = np.char.array(counted)
+    sizes = np.array(counts)
+
+    fig, ax1 = plt.subplots(figsize=(20, 10))
+    ax1.set_title('Source of Tweets', fontsize=30).set_position([.5, 1.05])
+    colors = ['#04182A', '#032333', '#032F3C',
+              '#033B45', '#02474E', '#025358',
+              '#025F61', '#026B6A', '#017773',
+              '#01837C', '#018F86', '#00BFAB',
+              '#01B45C', '#02A916', '#2C9F03']
+
+    percent = 100. * sizes / sizes.sum()
+
+    ax1.pie(sizes,
+            shadow=True, startangle=90, labeldistance=1, pctdistance=1.2)
+    patches, texts = plt.pie(sizes, colors=colors, startangle=90)
+    labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, percent)]
+    plt.legend(patches, labels, loc="best")
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    # plt.show()
+    plt.savefig(save_dir + 'tweet_source_pie_{}f'.format(users))
 
 if __name__ == '__main__':
 
