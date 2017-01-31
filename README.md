@@ -8,9 +8,5 @@ For new posts, the post time, screen name, and tweet contents are stored in data
 tweepy_status_object.txt is where the information about each tweet comes from.
 </p>
 
-<h3> friends.data.py output examples<h3>
-<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/f_data_output/109/tweet_cloud_109f.png" width=400>
-
-<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/f_data_output/109/24h_rt_v_t_109f.png" width=400>
-
-<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/f_data_output/109/tweet_rt_ratio_109f.png" width=400>
+<h3> twitter_user.py output example<h3>
+<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/f_data_output/tmp/user_graphic.jpg" width=400>
