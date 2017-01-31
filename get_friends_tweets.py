@@ -1,4 +1,5 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
+# -*- coding: utf-8 -*-
 
 import tweepy
 import sqlite3
@@ -78,20 +79,18 @@ def download_all(api, new_friends):
         # for each of friend's tweets, add attributes
         # to db if id not already in db
 
-        if tweet.id_str not in tweet_ids:
-
-            c.execute('''INSERT INTO tdump
-                     (tweet,
-                      username,
-                      tweet_date,
-                      tweet_id,
-                      tweet_source)
-                            VALUES(?,?,?,?,?)''',
-                             [tweet.text,
-                              tweet.user.screen_name,
-                              tweet.created_at,
-                              tweet.id_strd,
-                              tweet.source])
+        c.execute('''INSERT INTO tdump
+                        (tweet,
+                        username,
+                        tweet_date,
+                        tweet_id,
+                        tweet_source)
+                         VALUES(?,?,?,?,?)''',
+                         [tweet.text,
+                          tweet.user.screen_name,
+                          tweet.created_at,
+                          tweet.id_str,
+                          tweet.source])
 
     conn.commit()
 
@@ -113,16 +112,16 @@ def timeline_download(api):
         if tweet.id_str not in tweet_ids:
 
             c.execute('''INSERT INTO tdump
-                     (tweet,
-                      username,
-                      tweet_date,
-                      tweet_id,
-                      tweet_source)
-                            VALUES(?,?,?,?,?)''',
+                            (tweet,
+                            username,
+                            tweet_date,
+                            tweet_id,
+                            tweet_source)
+                             VALUES(?,?,?,?,?)''',
                              [tweet.text,
                               tweet.user.screen_name,
                               tweet.created_at,
-                              tweet.id_strd,
+                              tweet.id_str,
                               tweet.source])
 
     conn.commit()
@@ -171,10 +170,14 @@ if __name__ == '__main__':
                   tweet_id TEXT,
                   tweet_source TEXT)''')
 
-    consumer_key = parser.get('Keys', 'consumer_key')
-    consumer_secret = parser.get('Secrets', 'consumer_secret')
-    access_token = parser.get('Tokens', 'access_token')
-    access_token_secret = parser.get('Secrets', 'access_token_secret')
+    consumer_key = parser.get('Keys',
+                              'consumer_key').strip("'")
+    consumer_secret = parser.get('Secrets',
+                                 'consumer_secret').strip("'")
+    access_token = parser.get('Tokens',
+                              'access_token').strip("'")
+    access_token_secret = parser.get('Secrets',
+                                     'access_token_secret').strip("'")
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)

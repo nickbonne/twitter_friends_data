@@ -100,10 +100,17 @@ def main():
     most_sources = source_of_tweet(c, conn)
     tweet_source_pie(most_sources, users, save_dir)
 
+    rtf_data = rt_fav_data(c, conn)
+    post_success(c, conn, rtf_data)
+
+    conn.close()
     print('Finished in {} seconds.'.format(round((time.time()) - start), 3))
+
 
 # counts number of tweets from each friend
 def tweets_per_user(c, conn):
+
+    print('running tweets per user')
 
     # Collect list of tweet's users
     c.execute('SELECT username FROM tdump')
@@ -128,8 +135,11 @@ def tweets_per_user(c, conn):
 
     return tweet_list
 
+
 # returns list of dates without seconds values
 def tweets_date_list(c, conn):
+
+    print('running datel list')
 
     c.execute('SELECT tweet_date FROM tdump')
     dates = c.fetchall()
@@ -137,21 +147,24 @@ def tweets_date_list(c, conn):
 
     return dates
 
+
 # Flattens dates to only hour and minute values
 # returns number of tweets for each minute in 24 hours
 def total_time_tweet(dates):
+
+    print('running total time tweets')
 
     times = [date[-5:] for date in dates]
     time_list = []
     seen = []
 
-    for time in times:
+    for time_ in times:
 
-        if time not in seen:
+        if time_ not in seen:
 
-            count = times.count(time)
-            time_list.append([time, count])
-            seen.append(time)
+            count = times.count(time_)
+            time_list.append([time_, count])
+            seen.append(time_)
 
     finish(time_list, 'tweets_per_minute')
 
@@ -161,6 +174,8 @@ def total_time_tweet(dates):
 # finds total number of tweets for each
 # yyyy/mm/dd value in db
 def day_tweet(dates):
+
+    print('running day tweet')
 
     times = [date[:10] for date in dates]
 
@@ -181,6 +196,8 @@ def day_tweet(dates):
 # counts tweets for each day of the week
 # dates are coverted to weekday values('monday')
 def weekday_tweet(dates):
+
+    print('running weekday tweet')
 
     times = [date[:10] for date in dates]
 
@@ -213,6 +230,8 @@ def weekday_tweet(dates):
 # dates are flatten to only months
 # counts number of total tweets each month
 def month_tweet(dates):
+
+    print('running month tweet')
 
     months = (
         'January',
@@ -250,25 +269,29 @@ def month_tweet(dates):
 # total tweets per year counted
 def year_tweet(dates):
 
+    print('running year tweet')
+
     times = [date[:4] for date in dates]
 
     time_list = []
     seen = []
 
-    for time in times:
+    for time_ in times:
 
-        if time not in seen:
+        if time_ not in seen:
 
-            count = times.count(time)
-            time_list.append([time, count])
-            seen.append(time)
+            count = times.count(time_)
+            time_list.append([time_, count])
+            seen.append(time_)
 
     return time_list
 
 
-#NLTK used to break down tweets so hashtags
+# NLTK used to break down tweets so hashtags
 # can be easily picked and listed
 def hashtags(c, conn):
+
+    print('running hashtags')
 
     c.execute('SELECT tweet FROM tdump')
     all_tweets = c.fetchall()
@@ -299,6 +322,8 @@ def hashtags(c, conn):
 # occurence in original case list
 def popular_hash(hashtags):
 
+    print('running popular hash')
+
     hash_count = []
     seen = []
 
@@ -317,6 +342,8 @@ def popular_hash(hashtags):
 
 # graph of returned value of total_time_tweet function
 def one_day_chart(count_list, users, save_dir):
+
+    print('running one day chart')
 
     counted, one_counts = zip(*count_list)
     list_of_datetimes = [dt.strptime(c, '%H:%M') for c in counted]
@@ -344,6 +371,8 @@ def one_day_chart(count_list, users, save_dir):
 # two scatter plots, one for tweets, the other retweets
 def rtvt_one_day_chart(count_list, users, save_dir, t_dates, t_counts):
 
+    print('running rtvt one day chart')
+
     counted, counts = zip(*count_list)
     list_of_datetimes = [dt.strptime(c, '%H:%M') for c in counted]
     dates = matplotlib.dates.date2num(list_of_datetimes)
@@ -370,11 +399,13 @@ def rtvt_one_day_chart(count_list, users, save_dir, t_dates, t_counts):
                loc='upper right',
                shadow='True')
     # plt.show()
-    plt.savefig(save_dir + '24h_retweets_{}f'.format(users))
+    plt.savefig(save_dir + '24h_rt_v_t_{}f'.format(users))
 
 
 # graph of returned value of day_tweet function
 def day_count_chart(count_list, users, save_dir):
+
+    print('running day count chart')
 
     counted, counts = zip(*count_list)
     list_of_datetimes = [dt.strptime(c, '%Y-%m-%d') for c in counted]
@@ -405,6 +436,8 @@ def day_count_chart(count_list, users, save_dir):
 # color the cloud
 def word_cloud(hash_count, users, save_dir):
 
+    print('running word cloud')
+
     text = ''
 
     for hashtag in hash_count:
@@ -423,11 +456,13 @@ def word_cloud(hash_count, users, save_dir):
     wc.generate(text)
     image_colors = ImageColorGenerator(twitter_mask)
     wc.recolor(color_func=image_colors).to_file(path.join(d,
-                         save_dir + 'tweet_cloud_{}f.png'.format(users)))
+                        save_dir + 'tweet_cloud_{}f.png'.format(users)))
 
 
 # simple pie graph of tweet to retweet ratio
 def retweet_pie(retweets, total, users, save_dir):
+
+    print('running retweet pie')
 
     labels = 'Tweets', 'Retweets'
     sizes = [len(total) - retweets, retweets]
@@ -445,6 +480,8 @@ def retweet_pie(retweets, total, users, save_dir):
 # returns number of retweets and
 # retweeted account
 def retweets(c, conn):
+
+    print('running retweets')
 
     c.execute('SELECT tweet FROM tdump')
     all_tweets = c.fetchall()
@@ -464,11 +501,20 @@ def retweets(c, conn):
         # by TweetTokenizer
         broken_tweet = tweet_token.tokenize(tweet)
 
-        if broken_tweet[0] == 'RT':
+        if len(broken_tweet) > 1:
 
-            retweets += 1
-            # creating list of retweeted users
-            from_retweet.append(broken_tweet[1])
+            if broken_tweet[0] == 'RT':
+
+                retweets += 1
+                # creating list of retweeted users
+
+                try:
+                    from_retweet.append(broken_tweet[1])
+
+                except IndexError as e:
+
+                    print(tweet)
+                    exit()
 
     for rt in from_retweet:
 
@@ -488,12 +534,12 @@ def retweets(c, conn):
 # results are saved there
 def finish(results, name):
 
+    print('running finish')
+
     conn_2 = sqlite3.connect('tweet_dump_data.db')
     c_2 = conn_2.cursor()
 
-    c_2.execute('CREATE TABLE IF NOT EXISTS '
-                    + name + ''' (value TEXT,
-                      recurs TEXT)''')
+    c_2.execute('CREATE TABLE IF NOT EXISTS ' + name + ' (value TEXT, recurs TEXT)')
 
     c_2.execute('SELECT value FROM ' + name)
     users = c_2.fetchall()
@@ -518,6 +564,8 @@ def finish(results, name):
 # counted for every minute in 24h period
 def tweet_times(c, conn):
 
+    print('running tweet_times')
+
     c.execute('SELECT tweet, tweet_date FROM tdump')
     all_tweets = c.fetchall()
     all_tweets = [tweet for tweet in all_tweets if tweet[0][:2] != 'RT']
@@ -538,15 +586,18 @@ def tweet_times(c, conn):
     finish(tweet_time_counts, 'tweet_times')
 
     counted, counts = zip(*tweet_time_counts)
-    list_of_datetimes = [dt.strptime(c, '%H:%M') for c in counted]
+    list_of_datetimes = [dt.strptime(ct, '%H:%M') for ct in counted]
     dates = matplotlib.dates.date2num(list_of_datetimes)
 
     return dates, counts
 
+
 # same as tweet_times funct above
 # for retweets
-# these functs used for rtvt graph 
+# these functs used for rtvt graph
 def rt_times(c, conn):
+
+    print('running rt_times')
 
     c.execute('SELECT tweet, tweet_date FROM tdump')
     all_tweets = c.fetchall()
@@ -574,6 +625,8 @@ def rt_times(c, conn):
 # from and number of times each is used
 def source_of_tweet(c, conn):
 
+    print('running source of tweet')
+
     c.execute('SELECT tweet_source FROM tdump')
     all_sources = c.fetchall()
     all_sources = [source[0] for source in all_sources]
@@ -597,13 +650,15 @@ def source_of_tweet(c, conn):
 # top 14 tweet sources plus other(the rest)
 def tweet_source_pie(source_data, users, save_dir):
 
+    print('running tweet source pie')
+
     counted, counts = zip(*source_data)
 
     counted = list(counted[:14])  # first 14 sources kept
     counted.append('Others')  # rest grouped as 'others'
     # sum of 15-end of uses of 'others'
     other_counts = sum(counts[15:])
-    counts = list(counts[:14]) # first 14 count nums kept
+    counts = list(counts[:14])  # first 14 count nums kept
     counts.append(other_counts)
 
     labels = np.char.array(counted)
@@ -624,10 +679,224 @@ def tweet_source_pie(source_data, users, save_dir):
     patches, texts = plt.pie(sizes, colors=colors, startangle=90)
     labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, percent)]
     plt.legend(patches, labels, loc="best")
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie drawn as a circle.
 
     # plt.show()
     plt.savefig(save_dir + 'tweet_source_pie_{}f'.format(users))
+
+
+# get tweets that have a retweet count
+# above zero that are not retweets
+def rt_fav_data(c, conn):
+
+    print('runing rt fav data')
+
+    conn_2 = sqlite3.connect('tweet_dump_data.db')
+    c_2 = conn_2.cursor()
+
+    c.execute('''SELECT tweet,
+                        username,
+                        retweets_count,
+                        favorites_count
+                 FROM tdump''')
+    friends_retweets = c.fetchall()
+    friends_retweets = [list(fr_rt) for fr_rt in friends_retweets]
+
+    filtered_fr_retweets = []
+    user_data = []  # element ex: ['username',
+    #                              'retweeted_posts',
+    #                              'retweeted_total',
+    #                              'fav_posts,
+    #                              'fav_total]
+    seen_users = []
+
+    for fr_retweet in friends_retweets:
+
+        # first chars of tweet not 'RT'
+        # and retweet_count > zero
+        if fr_retweet[0][:2] != 'RT':
+
+            filtered_fr_retweets.append(fr_retweet)
+
+    for filtered_retweet in filtered_fr_retweets:
+
+        if filtered_retweet[1] not in seen_users:
+
+            seen_users.append(filtered_retweet[1])
+
+            username = filtered_retweet[1]
+
+            # list comp creates list of just usernames
+            # to count how many posts have been retweeted
+            # more than once
+            retweeted_posts = [x[1] for x in filtered_fr_retweets if
+                               x[1] == username and
+                               int(x[2]) > 0].count(username)
+
+            # list comp creates list of the num of times
+            # each post was retweeted, list is summed
+            retweeted_total = sum(int(x[2]) for x in filtered_fr_retweets if
+                                  x[1] == username)
+
+            # retweeted_posts for favs
+            post_fav = len(([x[3] for x in
+                           filtered_fr_retweets if
+                           x[1] == username and
+                           int(x[3]) > 0]))
+
+            # retweeted_total for favs
+            fav_total = sum(int(x[3]) for x in filtered_fr_retweets if
+                            x[1] == username)
+
+            reach_total = len(([x[3] for x in
+                              filtered_fr_retweets if
+                              x[1] == username and
+                              int(x[3]) > 0 and
+                              int(x[2]) > 0]))
+
+            user_data.append([username,
+                             retweeted_posts,
+                             retweeted_total,
+                             post_fav,
+                             fav_total,
+                             reach_total])
+
+    c_2.execute('''CREATE TABLE IF NOT EXISTS rt_fav_nums
+                   (value TEXT,
+                    total_tweets TEXT,
+                    rt_post_recurs TEXT,
+                    rt_total_recurs TEXT,
+                    fav_post_recurs TEXT,
+                    fav_total_recurs TEXT,
+                    reach_recurs TEXT,
+                    reach_score TEXT)''')
+
+    c_2.execute('SELECT value FROM rt_fav_nums')
+    users_in_db = c_2.fetchall()
+    users_in_db = [e[0] for e in users_in_db]
+
+    for u_data in user_data:
+
+        if u_data[0] not in users_in_db:
+
+            c_2.execute('''INSERT INTO rt_fav_nums (value,
+                                                    rt_post_recurs,
+                                                    rt_total_recurs,
+                                                    fav_post_recurs,
+                                                    fav_total_recurs,
+                                                    reach_recurs)
+                           VALUES(?,?,?,?,?,?)''',
+                        (u_data[0], u_data[1],
+                         u_data[2], u_data[3],
+                         u_data[4], u_data[5],)
+                        )
+
+        else:
+
+            c_2.execute('''UPDATE rt_fav_nums
+                           SET value=?,
+                               rt_post_recurs=?,
+                               rt_total_recurs=?,
+                               fav_post_recurs=?,
+                               fav_total_recurs=?,
+                               reach_recurs=?''',
+                        [u_data[0], u_data[1],
+                         u_data[2], u_data[3],
+                         u_data[4], u_data[5]])
+
+    conn_2.commit()
+
+    return user_data
+
+
+# measures post success from retweets & favorites
+def post_success(c, conn, user_data):
+
+    print('running post success')
+
+    conn_2 = sqlite3.connect('tweet_dump_data.db')
+    c_2 = conn_2.cursor()
+
+    result_list = []
+
+    for u_data in user_data:
+
+        # users
+        user = u_data[0]
+
+        # total tweets
+        c_2.execute('SELECT recurs FROM tweets_per_user WHERE value=?', [user])
+        total_tweets = c_2.fetchone()[0]
+
+        c_2.execute('''UPDATE rt_fav_nums
+                       SET total_tweets=?
+                       WHERE value=?''',
+                    [total_tweets, user])
+        # total posts with > 1 retweet & favorite
+        reached = u_data[5]
+
+        if reached == 0:
+
+            reached = 1
+
+        # total favorites per user
+        fav_total = u_data[4]
+
+        # total posts with > 1 favorite
+        post_fav = u_data[3]
+
+        # total retweets per user
+        rt_total = u_data[2]
+
+        # total posts with > 1 retweet
+        rt_post = u_data[1]
+
+        try:
+            pct_retweeted = int(rt_post) / int(total_tweets)
+        except ZeroDivisionError:
+            pct_retweeted = 0
+
+        try:
+            avg_retweet = int(rt_total) / int(rt_post)
+        except ZeroDivisionError:
+            avg_retweet = 0
+
+        try:
+            pct_favorited = int(post_fav) / int(total_tweets)
+        except ZeroDivisionError:
+            pct_retweeted = 0
+
+        try:
+            avg_favorite = int(fav_total) / int(post_fav)
+        except ZeroDivisionError:
+            avg_favorite = 0
+
+        try:
+            pct_reached = int(reached) / int(total_tweets)
+        except ZeroDivisionError:
+            pct_reached = 0
+
+        # reached score
+        # an ambiguous number to try to quantify
+        # how popular a user is
+
+        try:
+            reached_score = reached * ((avg_retweet + avg_favorite) / ((pct_retweeted + pct_favorited) ** 0.2))
+        except ZeroDivisionError:
+            reached_score = 0
+
+        result_list.append([user,
+                            total_tweets,
+                            (pct_retweeted * 100),
+                            avg_retweet,
+                            (pct_favorited * 100),
+                            avg_favorite,
+                            (pct_reached * 100),
+                            reached_score])
+
+    conn_2.commit()
+    conn_2.close()
+
 
 if __name__ == '__main__':
 
