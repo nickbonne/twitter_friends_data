@@ -4,7 +4,7 @@
 
 <p>With the help of cron, tweet_collect.py is run every 15min looking for new friends and new timeline posts.
 For new posts, the post time, screen name, and tweet contents are stored in database.</p>
-<br><br>
+<br>
 tweepy_status_object.txt is where the information about each tweet comes from.
 <br><br>
 Below are some examples of what a user may request. Some graphics aren't available for showing a user's individual data simply because there isn't enough yet.
