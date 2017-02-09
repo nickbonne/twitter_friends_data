@@ -15,4 +15,6 @@ The reason behind grapics existing in a tmp directory is to conserve storage spa
 </p>
 
 <h3> twitter_user.py output example<h3>
-<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/f_data_output/tmp/user_graphic.jpg" width=400>
+<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/output/tmp/f_hash_cloud.png" width=400>
+<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/output/tmp/f_rtvt_aio.png" width=400>
+<img src="https://github.com/nickbonne/twitter_friends_data/blob/master/output/tmp/f_source_pie.png" width=400>
