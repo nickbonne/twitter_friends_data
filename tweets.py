@@ -1,6 +1,7 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
 
 import sqlite3
+
 from datetime import datetime as dt
 from nltk.tokenize import TweetTokenizer
 
@@ -15,26 +16,7 @@ Tweet class is for just tweets, retweets are filtered out.
 
 def main():
 
-    # all_tweets = Tweets.get_all_tweets()
-
-    # user_tweet_count = Tweets.tweets_per_user('jhudddd', all_tweets)
-    # tpm_count = Tweets.tweets_per_minute(all_tweets)
-    # tph_count = Tweets.tweets_per_hour(all_tweets)
-    # tpd_count = Tweets.tweets_per_date(all_tweets)
-    # weekday_count = Tweets.tweets_per_weekday(all_tweets)
-    # monthly_count = Tweets.tweets_per_month(all_tweets)
-    # tpy_count = Tweets.tweets_per_year(all_tweets)
-
-    all_sources = Sources.get_all_sources()
-
-    source_count = Sources.counted_sources(all_sources)
-    source_count.sort(key=lambda x: int(x[1]), reverse=True)
-
-    for i in source_count[:25]:
-
-        print(i)
-
-    # print(user_tweet_count)
+    pass
 
 
 class AllTweets:
@@ -48,7 +30,9 @@ class AllTweets:
         c.execute('''SELECT tweet,
                             username,
                             tweet_date,
-                            tweet_source
+                            tweet_id,
+                            tweet_source,
+                            user_id
                      FROM tdump''')
 
         return c.fetchall()
@@ -57,7 +41,7 @@ class AllTweets:
 
         return [x[1] for x in
                 tweet_list if
-                x[1] == user].count(user)
+                x[5] == user].count(user)
 
     def all_tweets_per_minute(tweet_list):
 
@@ -198,7 +182,9 @@ class Tweets:
         c.execute('''SELECT tweet,
                             username,
                             tweet_date,
-                            tweet_source
+                            tweet_id,
+                            tweet_source,
+                            user_id
                      FROM tdump''')
 
         all_tweets = c.fetchall()
@@ -221,7 +207,7 @@ class Tweets:
 
         return [x[1] for x in
                 tweet_list if
-                x[1] == user].count(user)
+                x[5] == user].count(user)
 
     def tweets_per_minute(tweet_list):
 
@@ -356,24 +342,25 @@ class Tweets:
         words = ''
 
         # Folder where text files containing strings to be allowed or forbidden
-        filter_path = '/home/nick/.virtualenvs/twitterbots/bots/'
+        filter_path = '/home/nick/.virtualenvs/twitterbots/bots/control_files/'
 
         # Gets rid of '\n' and creates lists of filter items
         stopwords = [line.strip() for line in
                      open(filter_path + 'stopwords.txt')]
 
-        for tweet in tweet_list:
+        # tweet_list = [x[0] for x in tweet_list]
+        tweet_list = ' '.join([x[0] for x in tweet_list])
 
-            tokenized_twt = twt_token.tokenize(tweet[0])
+        tokenized_twt = twt_token.tokenize(tweet_list)
 
-            for i in tokenized_twt:
+        for i in tokenized_twt:
 
-                if i.lower() not in stopwords \
-                    and i[0] != '@' \
-                        and i[0] != '#' \
-                        and i[:4].lower() != 'http':
+            if i.lower() not in stopwords \
+                and i[0] != '@' \
+                    and i[0] != '#' \
+                    and i[:4].lower() != 'http':
 
-                    words = (words + ' ') + i
+                words = (words + ' ') + i
 
         return words
 

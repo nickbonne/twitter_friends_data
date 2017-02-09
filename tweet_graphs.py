@@ -1,19 +1,15 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
 
-# from scoring import ScoreCard
-from hashtags import Hashtags
-from retweets import Retweets
-from tweets import AllTweets
-from tweets import Tweets
 import numpy as np
-from os import path
-from PIL import Image
 import matplotlib.dates
-from wordcloud import WordCloud
-from wordcloud import ImageColorGenerator
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+
+from os import path
+from PIL import Image
+from wordcloud import WordCloud
 from datetime import datetime as dt
+from wordcloud import ImageColorGenerator
 
 '''
 
@@ -29,29 +25,14 @@ phone_compare.Source
 
 def main():
 
-    # all_tweets = AllTweets.all_tweets_per_date(AllTweets.get_all_tweets())
-    # Graphs.all_in_one(all_tweets)
-    # Graphs.total_tweets_per_day(all_tweets)
-
-    # hashtag_list = Hashtags.count_hashtags(Hashtags.get_all_hashtags(Hashtags.get_all_tweets()))
-    # Graphs.hashtag_word_cloud(hashtag_list)
-
-    # source_list = Sources.counted_sources(Sources.get_all_sources())
-
-    tweets = len(Tweets.get_all_tweets())
-    retweets = len(Retweets.get_all_retweets())
-    Graphs.retweet_pie(tweets, retweets)
-
-    # rtwt_coords = Retweets.retweets_per_minute(Retweets.get_all_retweets())
-    # twt_coords = Tweets.tweets_per_minute(Tweets.get_all_tweets())
-    # Graphs.rtwt_vs_twt_24h(rtwt_coords, twt_coords)
+    pass
 
 
 class Graphs:
 
     # all tweets plotted as if they happened
     # in 24 hours. No distinction to retweets.
-    def all_in_one(coordinates):
+    def all_in_one(coordinates, home_class):
 
         dates, y_coord = zip(*coordinates)
         list_of_datetimes = [dt.strptime(x, '%H:%M') for x in dates]
@@ -73,10 +54,18 @@ class Graphs:
         plt.xticks(rotation=45)
 
         matplotlib.pyplot.plot_date(x_coord, y_coord)
-        # plt.show()
-        plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/f_data_output/tmp/aio.png')
 
-    def total_tweets_per_day(coordinates):
+        # plt.show()
+
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_aio.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/aio.png')
+
+    def total_tweets_per_day(coordinates, home_class):
 
         dates, y_coord = zip(*coordinates)
         list_of_datetimes = [dt.strptime(x, '%Y-%m-%d') for x in dates]
@@ -98,10 +87,17 @@ class Graphs:
         plt.xticks(rotation=45)
         matplotlib.pyplot.plot_date(x_coord, y_coord)
         plt.plot(x_coord, np.poly1d(np.polyfit(x_coord, y_coord, 1))(x_coord))
-        # plt.show()
-        plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/f_data_output/tmp/per_day.png')
 
-    def rtwt_vs_twt_24h(rtwt_coords, twt_coords):
+        # plt.show()
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_per_day.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/per_day.png')
+
+    def rtwt_vs_twt_24h(rtwt_coords, twt_coords, home_class):
 
         rtwt_dates, rtwt_y_coord = zip(*rtwt_coords)
         list_of_rt_dts = [dt.strptime(x, '%H:%M') for x in rtwt_dates]
@@ -138,20 +134,36 @@ class Graphs:
         plt.legend(handles=[tweet_patch, retweet_patch],
                    loc='upper right',
                    shadow='True')
-        plt.show()
 
-    def hashtag_word_cloud(hashtag_list):
+        # plt.show()
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_rtvt_aio.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/rtvt_aio.png')
+
+    def hashtag_word_cloud(hashtags, home_class):
 
         text = ''
 
-        for hashtag in hashtag_list:
+        if isinstance(hashtags, list):
 
-            hash_text = (hashtag[0] + ' ') * hashtag[1]
-            text = text + hash_text.strip() + ' '
+            for hashtag in hashtags:
+
+                hash_text = (hashtag[0] + ' ') * hashtag[1]
+                text = text + hash_text.strip() + ' '
+
+        else:
+
+            text = hashtags
 
         d = path.dirname(__file__)
 
-        twitter_mask = np.array(Image.open(path.join(d, 'twitter_icon.png')))
+        media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
+
+        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
 
         wc = WordCloud(background_color='black',
                        max_words=2000,
@@ -162,18 +174,103 @@ class Graphs:
 
         fig, ax1 = plt.subplots(figsize=(12, 9))
         plt.imshow(wc.recolor(color_func=image_colors))
-        plt.axis('off'  )
-        plt.show()
+        plt.axis('off')
 
-        #won't work here for example
-        # wc.recolor(color_func=image_colors).to_file(path.join(d,
-        #              save_dir + 'tweet_cloud_{}f.png'.format(users)))
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-    def tweeted_word_cloud(words_string):
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_hash_cloud.png')
+
+        # if str(home_class) == "<class '__main__.User'>":
+
+        #     plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/hash_cloud.png')
+
+    def mention_word_cloud(mentions, home_class):
+
+        text = ''
+
+        if isinstance(mentions, list):
+
+            for mention in mentions:
+
+                mention_text = (mention[0] + ' ') * mention[1]
+                text = text + mention_text.strip() + ' '
+
+        else:
+
+            text = mentions
 
         d = path.dirname(__file__)
 
-        twitter_mask = np.array(Image.open(path.join(d, 'twitter_icon.png')))
+        media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
+
+        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
+
+        wc = WordCloud(background_color='black',
+                       max_words=2000,
+                       mask=twitter_mask,)
+
+        wc.generate(text)
+        image_colors = ImageColorGenerator(twitter_mask)
+
+        fig, ax1 = plt.subplots(figsize=(12, 9))
+        plt.imshow(wc.recolor(color_func=image_colors))
+        plt.axis('off')
+
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_mention_cloud.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/mention_cloud.png')
+
+    def retweeted_word_cloud(retweeted, home_class):
+
+        text = ''
+
+        if isinstance(retweeted, list):
+
+            for retweet in retweeted:
+
+                rt_text = (retweet[0] + ' ') * retweet[1]
+                text = text + rt_text.strip() + ' '
+
+        else:
+
+            text = retweeted
+
+        d = path.dirname(__file__)
+
+        media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
+
+        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
+
+        wc = WordCloud(background_color='black',
+                       max_words=2000,
+                       mask=twitter_mask,)
+
+        wc.generate(text)
+        image_colors = ImageColorGenerator(twitter_mask)
+
+        fig, ax1 = plt.subplots(figsize=(12, 9))
+        plt.imshow(wc.recolor(color_func=image_colors))
+        plt.axis('off')
+
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_retweeted_cloud.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/retweeted_cloud.png')
+
+    def tweeted_word_cloud(words_string, home_class):
+
+        d = path.dirname(__file__)
+
+        media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
+
+        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
 
         wc = WordCloud(background_color='black',
                        max_words=2000,
@@ -188,9 +285,16 @@ class Graphs:
         plt.imshow(wc.recolor(color_func=image_colors))
         plt.axis('off')
         # plt.show()
-        plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/f_data_output/tmp/word_cloud.png')
 
-    def tweet_source_pie(source_list):
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_word_cloud.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/word_cloud.png')
+
+    def tweet_source_pie(source_list, home_class):
 
         source_list.sort(key=lambda x: int(x[1]), reverse=True)
 
@@ -228,9 +332,15 @@ class Graphs:
         ax1.axis('equal')  # Equal aspect ratio ensures pie is drawn as circle.
 
         # plt.show()
-        plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/f_data_output/tmp/source_pie.png')
+        if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-    def retweet_pie(tweets, retweets):
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_source_pie.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/source_pie.png')
+
+    def retweet_pie(tweets, retweets, home_class):
 
         labels = 'Tweets', 'Retweets'
         sizes = [tweets, retweets]
@@ -239,12 +349,35 @@ class Graphs:
 
         fig, ax1 = plt.subplots(figsize=(12, 9))
         ax1.set_title('Tweets vs Retweets',
-              fontsize=24).set_position([0.5, 1.05, ])
+                      fontsize=24).set_position([0.5, 1.05, ])
+        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                shadow=True, startangle=90, colors=colors)
+        ax1.axis('equal')
+
+        # plt.show()
+        if str(home_class) == "<class '__main__.AllFriends'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_retweet_pie.png')
+
+        if str(home_class) == "<class 'personal.User'>":
+
+            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/retweet_pie.png')
+
+    def geo_pie(on_count, off_count):
+
+        labels = 'On', 'Off'
+        sizes = [on_count, off_count]
+        colors = ['lightskyblue', 'lightgrey']
+        explode = (0, 0.1)
+
+        fig, ax1 = plt.subplots(figsize=(12, 9))
+        ax1.set_title('Geolocation Usage',
+                      fontsize=24).set_position([0.5, 1.05, ])
         ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
                 shadow=True, startangle=90, colors=colors)
         ax1.axis('equal')
         # plt.show()
-        plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/f_data_output/tmp/originality.png')
+        plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/gelocation.png')
 
 
 if __name__ == '__main__':

@@ -2,7 +2,6 @@
 
 import sqlite3
 from nltk.tokenize import TweetTokenizer
-from tweet_graphs import Graphs
 
 '''
 
@@ -16,36 +15,8 @@ Twitter for Android Tablets, etc
 
 def main():
 
-    all_tweets = Sources.get_all_tweets()
-    # all_retweets = Sources.get_all_retweets()
-    # all_retweets = Sources.get_all_retweets()
-    # source_list = Sources.get_all_sources()
+    pass
 
-    # sources_counted = Sources.counted_sources(source_list)
-    # sources_counted.sort(key=lambda x: int(x[1]), reverse=True)
-
-    # android_tweets = Android.tweets(all_tweets)
-    # android_retweets = Android.retweets(all_retweets)
-
-    # print('Android users are {}% original'.format(
-    #       str(round(100 * (len(android_tweets) / (len(android_tweets) + len(android_retweets))), 1))))
-
-    # iphone_tweets = Iphone.tweets(all_tweets)
-    # iphone_retweets = Iphone.retweets(all_retweets)
-
-    # print('iPhone users are {}% original'.format(
-    #       str(round(100 * (len(iphone_tweets) / (len(iphone_tweets) + len(iphone_retweets))), 1))))
-
-    # android_users = Android.num_of_users(all_tweets, all_retweets)
-
-    # print('{} active Android users, {} have used Android to tweet.'.format(android_users[0], android_users[1]))
-
-    # iphone_users = Iphone.num_of_users(all_tweets, all_retweets)
-
-    # print('{} active iPhone users, {} have used iPhone to tweet.'.format(iphone_users[0], iphone_users[1]))
-
-    # Graphs.retweet_pie(len(android_tweets), len(android_retweets))
-    # Graphs.retweet_pie(len(iphone_tweets), len(iphone_retweets))
 
 class Sources:
 
@@ -58,7 +29,7 @@ class Sources:
         c.execute('''SELECT tweet_source
                      FROM tdump''')
 
-        all_sources = c.fetchall()
+        all_sources = [x[0] for x in c.fetchall()]
 
         return all_sources
 

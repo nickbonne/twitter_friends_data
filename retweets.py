@@ -1,20 +1,13 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
 
 import sqlite3
+
 from nltk.tokenize import TweetTokenizer
 
 
 def main():
 
-    all_retweets = Retweets.get_all_retweets()
-
-    # user_retweets = Retweets.get_user_retweets('jhudddd', all_retweets)
-    # retweeted_users = Retweets.get_retweeted_users(all_retweets)
-    # rt_time_count = Retweets.retweets_per_minute(all_retweets)
-
-    # for i in rt_time_count:
-    #     print(i)
-    # print(len(all_retweets))
+    pass
 
 
 class Retweets:
@@ -28,7 +21,9 @@ class Retweets:
         c.execute('''SELECT tweet,
                             username,
                             tweet_date,
-                            tweet_source
+                            tweet_id,
+                            tweet_source,
+                            user_id
                      FROM tdump''')
 
         all_tweets = c.fetchall()
@@ -59,14 +54,14 @@ class Retweets:
     def get_user_retweets(user, retweet_list):
 
         user_retweets = [i for i in retweet_list if
-                         i[1] == user]
+                         i[5] == user]
 
         return user_retweets
 
     def retweets_per_user(user, retweet_list):
 
         return len([i for i in retweet_list if
-                i[1] == user])
+                    i[5] == user])
 
     # return list of every time a user was retweeted
     def get_retweeted_users(retweet_list):
@@ -91,7 +86,14 @@ class Retweets:
                     retweeted_users.append(token)
                     last_token = token
 
-        return retweeted_users
+                else:
+
+                    last_token = token
+
+        rtwt_count = list(set([(x, retweeted_users.count(x))
+                          for x in retweeted_users]))
+
+        return retweeted_users, rtwt_count
 
     # for 24H flattened graph
     # dates are trimmed to just times (HH:MM)

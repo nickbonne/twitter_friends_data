@@ -1,6 +1,5 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
 
-import sqlite3
 from nltk.tokenize import TweetTokenizer
 
 
@@ -11,7 +10,7 @@ def main():
 
 class Mentions:
 
-    # returns list of all users mentioned if 
+    # returns list of all users mentioned if
     # token before is not 'RT' or 'rt'
     def users_mentioned(tweet_list):
 
@@ -25,11 +24,19 @@ class Mentions:
 
             for i in tokenized_twt:
 
-                if i[0] == '@' and last_token.lower() != 'rt':
+                if i[0] == '@' \
+                    and last_token.lower() != 'rt' \
+                        and i[1:] != 'BonneNick' \
+                           and i != '@':
 
                     mentioned.append(i)
+                    last_token = i
 
-        mention_count = set([(x, mentioned.count(x)) for x in mentioned])
+                else:
+
+                    last_token = i
+
+        mention_count = list(set([(x, mentioned.count(x)) for x in mentioned]))
 
         return mentioned, mention_count
 
