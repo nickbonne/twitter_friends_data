@@ -1,7 +1,7 @@
 <h1>Twitter Friend Data</h1>
 <br>
 <p><strong>As of 09-02-2017 I am looking into what I have to do to thread this application. I want bot_commander.py to run the whole show, only using cron to automatically run the program on startup.</strong>
-<br>
+
 <p>With the help of cron, tweet_collect.py is run every 15min looking for new friends and new timeline posts.
 For new posts, the post time, screen name, and tweet contents are stored in database.</p>
 <br><br>
