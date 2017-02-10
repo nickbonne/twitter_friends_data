@@ -9,9 +9,9 @@ tweepy_status_object.txt is where the information about each tweet comes from.
 <br><br>
 Below are some examples of what a user may request. Some graphics aren't available for showing a user's individual data simply because there isn't enough yet.
 <br><br>
-More graphics may be added, more stat's may be tracked in the future but right now I'm focusing on deployment.
+More graphics may be added, more stat's may be tracked in the future but right now I'm focusing on just getting it running.
 <br><br>
-The reason behind grapics existing in a tmp directory is to conserve storage space. The program lives on my laptop's 250GB solid state drive. The goal to switch the database to gather both friends and followers data and to allow them to tweet my account for a personal graphic or one for the whole. I also don't care enough to have directories for every friend or follower. If the app is well recieved I will offload to Heroku or Digital Ocean and continue running it.
+The reason behind grapics existing in a tmp directory is to conserve storage space. The program lives on my laptop's 250GB solid state drive. The goal to switch the program to gather both friends and followers data and to allow them to tweet my account for a personal graphic or one for the whole. If the app is well recieved I will offload to Heroku or Digital Ocean and continue running it.
 </p>
 
 <h3> twitter_user.py output example<h3>
