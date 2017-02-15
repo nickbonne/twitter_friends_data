@@ -63,7 +63,7 @@ class AllData:
                       friends INTEGER,
                       followers INTEGER,
                       geoloc TEXT,
-                      utc_offset)''')
+                      utc_offset INTEGER)''')
 
         c.execute('SELECT user_id FROM tdump')
         users = [x[0] for x in set(c.fetchall())]
@@ -96,15 +96,19 @@ class AllData:
                 # chance to get lat/long from status object
                 user_geo = user_object.geo_enabled
 
+                # utc time offset
+                user_utc = user_object.utc_offset
+
                 c.execute('''INSERT INTO user_data
-                             VALUES (?,?,?,?,?,?,?)''',
+                             VALUES (?,?,?,?,?,?,?,?)''',
                           [user,
                            user_id_,
                            user_created,
                            user_statuses,
                            user_friends,
                            user_follwers,
-                           user_geo])
+                           user_geo,
+                           user_utc])
 
             else:
 
@@ -129,15 +133,19 @@ class AllData:
                 # chance to get lat/long from status object
                 user_geo = user_object.geo_enabled
 
+                # utc time offset
+                user_utc = user_object.utc_offset
+
                 c.execute('''INSERT INTO user_data
-                             VALUES (?,?,?,?,?,?,?)''',
+                             VALUES (?,?,?,?,?,?,?,?)''',
                           [user,
                            user_id_,
                            user_created,
                            user_statuses,
                            user_friends,
                            user_follwers,
-                           user_geo])
+                           user_geo,
+                           user_utc])
 
         conn.commit()
 
@@ -308,7 +316,9 @@ class ScreenNames:
         # list of individual numbers [1,0,] for 'user10'
         all_digits = re.findall(r'\d', user_string)
         digit_count = list(set([(x, all_digits.count(x)) for x in all_digits]))
-        digit_count = sorted(digit_count, key=lambda x: int(x[1]), reverse=True)
+        digit_count = sorted(digit_count,
+                             key=lambda x: int(x[1]),
+                             reverse=True)
 
         # list of integers [10,] for 'user10'
         all_ints = re.findall(r'\d+', user_string)
@@ -334,7 +344,9 @@ class ScreenNames:
         # list of number of strings separated by
         # underscores in each username
 
-        strings_separated = [[x for x in i if x != ''] for i in with_underscore]
+        strings_separated = [[x for x in i if x != '']
+                             for i in with_underscore]
+
         strings_separated = [len(x) for x in strings_separated]
 
         ss_avg = round(sum(strings_separated) / underscore_count, 2)

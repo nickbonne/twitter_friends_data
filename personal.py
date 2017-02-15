@@ -181,7 +181,6 @@ class User:
                             key=lambda x: int(x[1]),
                             reverse=True)
         fav_source = fav_source[0]
-        print(fav_source)
 
         return (screen_name,
                 account_created,
@@ -352,6 +351,11 @@ class User:
 
     def create_stat_box(self, stat_strings):
 
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'statbox_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
+
         img = Image.open('/home/nick/.virtualenvs/twitterbots/bots/img/stat_box.png')
         draw = ImageDraw.Draw(img)
 
@@ -359,7 +363,9 @@ class User:
 
         draw.text((0, 0), stat_strings[0], (0, 0, 0), font=font)
         draw.text((550, 0), stat_strings[1], (0, 0, 0), font=font)
-        img.save('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/filled_box.png')
+        img.save(path_ + name_)
+
+        return path_ + name_
 
 
 if __name__ == '__main__':

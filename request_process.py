@@ -7,18 +7,31 @@ from all_friends import AllFriends
 
 '''
 Many functions will now require user_id to be passed in
-for fixing tweet times to a users local time 
+for fixing tweet times to a users local time
 '''
+
 
 def main():
 
-    pass
+    tweet = ['Okay, I\'ll bite @BonneNick --user_statbox',
+             'jhudddd',
+             '2017-02-02 22:45:54',
+             '827286951837458433',
+             'Twitter for iPhone',
+             '61561677']
+
+    Screen.is_command(tweet)
 
 
 class Screen:
 
     # only finds and handles first command
-    def is_command(tweet):
+    # takes list of tweets with me mentioned
+    # looks for commands returns list of jobs to be
+    # pooled
+    def is_command(tweet_list):
+
+        twt_cmd_pairs = []
 
         commands = ['--help',
                     '--user_statbox',
@@ -39,28 +52,30 @@ class Screen:
                     '--all_geo',
                     '--all_retweet_pie']
 
-        split_tweet = tweet[0].lower().split()
+        for tweet in tweet_list:
 
-        try:
+            split_tweet = tweet[0].lower().split()
 
-            cmd = [x for x in split_tweet if x in commands][0]
+            try:
 
-        except IndexError:
+                cmd = [x for x in split_tweet if x in commands][0]
 
-            cmd = ''
+            except IndexError:
 
-        # empty string or --help
-        if cmd == '':
+                cmd = ''
 
-            pass
+            # empty string
+            if cmd == '':
 
-        elif cmd == commands[0]:
+                pass
 
-            return Screen.help(tweet, False)
+            elif cmd in commands:
 
-        elif cmd in commands:
+                pair = [tweet, cmd]
 
-            Screen.direct_request(tweet, cmd)
+                twt_cmd_pairs.append(pair)
+
+        return twt_cmd_pairs
 
     def direct_request(tweet, cmd):
 
@@ -68,74 +83,75 @@ class Screen:
 
             if cmd == '--user_statbox':
 
-                UserGraphic.statbox(tweet)
+                result = UserGraphic.statbox(tweet)
 
             elif cmd == '--user_tweet_cloud':
 
-                UserGraphic.tweet_cloud(tweet)
+                result = UserGraphic.tweet_cloud(tweet)
 
             elif cmd == '--user_retweet_pie':
 
-                UserGraphic.retweet_pie(tweet)
+                result = UserGraphic.retweet_pie(tweet)
 
             elif cmd == '--user_aio_plot':
 
-                UserGraphic.aio_plot(tweet)
+                result = UserGraphic.aio_plot(tweet)
 
             elif cmd == '--user_sources':
 
-                UserGraphic.sources(tweet)
+                result = UserGraphic.sources(tweet)
 
             elif cmd == '--user_usage':
 
-                UserGraphic.usage(tweet)
+                result = UserGraphic.usage(tweet)
 
         elif cmd[:6] == '--all_':
 
             if cmd == '--all_statbox':
 
-                print('Statbox not available yet.')
-                Screen.help('False')
+                return Screen.help(tweet, False)
 
             elif cmd == '--all_tweet_cloud':
 
-                AllGraphic.tweet_cloud()
+                result = AllGraphic.tweet_cloud()
 
             elif cmd == '--all_hash_cloud':
 
-                AllGraphic.hash_cloud()
+                result = AllGraphic.hash_cloud()
 
             elif cmd == '--all_mention_cloud':
 
-                AllGraphic.mention_cloud()
+                result = AllGraphic.mention_cloud()
 
             elif cmd == '--all_rt_cloud':
 
-                AllGraphic.rt_cloud()
+                result = AllGraphic.rt_cloud()
 
             elif cmd == '--all_aio':
 
-                AllGraphic.aio()
+                result = AllGraphic.aio()
 
             elif cmd == '--all_rtvt_aio':
 
-                AllGraphic.rtvt_aio()
+                result = AllGraphic.rtvt_aio()
 
             elif cmd == '--all_per_day':
 
-                AllGraphic.per_day()
+                result = AllGraphic.per_day()
 
             elif cmd == '--all_sources':
 
-                AllGraphic.sources()
+                result = AllGraphic.sources()
 
             elif cmd == '--all_geo':
 
-                AllGraphic.geo()
+                result = AllGraphic.geo()
 
             elif cmd == '--all_retweet_pie':
 
-                AllGraphic.retweet_pie()
+                result = AllGraphic.retweet_pie()
+
+        return result
 
     def help(tweet, *args):
 
@@ -248,9 +264,6 @@ class UserGraphic:
 
     def statbox(tweet):
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'filled_box.png'
-
         tweets = User(tweet[5]).user_tweets()
         tweets = TimeFix.adjust_datetimes(tweet[5], tweets)
 
@@ -266,9 +279,9 @@ class UserGraphic:
                                       statuses)
 
         box_strings = User.box_string(tweet[5], box_data)
-        User.create_stat_box(tweet[5], box_strings)
+        create = User.create_stat_box(tweet[5], box_strings)
 
-        return path + filename
+        return str(create)
 
     def tweet_cloud(tweet):
 

@@ -1,5 +1,6 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
 
+import time
 import numpy as np
 import matplotlib.dates
 import matplotlib.pyplot as plt
@@ -12,6 +13,9 @@ from datetime import datetime as dt
 from wordcloud import ImageColorGenerator
 
 '''
+
+'f_' in front of saved graphics indicates the graphic covers all friends and
+followers.
 
 Graphs need to share a style
 Need easy way to run without saving a file
@@ -33,6 +37,11 @@ class Graphs:
     # all tweets plotted as if they happened
     # in 24 hours. No distinction to retweets.
     def all_in_one(coordinates, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'aio_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         dates, y_coord = zip(*coordinates)
         list_of_datetimes = [dt.strptime(x, '%H:%M') for x in dates]
@@ -59,13 +68,22 @@ class Graphs:
 
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_aio.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/aio.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def total_tweets_per_day(coordinates, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'per_day_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         dates, y_coord = zip(*coordinates)
         list_of_datetimes = [dt.strptime(x, '%Y-%m-%d') for x in dates]
@@ -91,13 +109,22 @@ class Graphs:
         # plt.show()
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_per_day.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/per_day.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def rtwt_vs_twt_24h(rtwt_coords, twt_coords, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'rtvt_aio_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         rtwt_dates, rtwt_y_coord = zip(*rtwt_coords)
         list_of_rt_dts = [dt.strptime(x, '%H:%M') for x in rtwt_dates]
@@ -138,13 +165,22 @@ class Graphs:
         # plt.show()
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_rtvt_aio.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/rtvt_aio.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def hashtag_word_cloud(hashtags, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'hash_cloud_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         text = ''
 
@@ -163,7 +199,8 @@ class Graphs:
 
         media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
 
-        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
+        twitter_mask = np.array(Image.open(path.join(d, media_path +
+                                                     'twitter_icon.png')))
 
         wc = WordCloud(background_color='black',
                        max_words=2000,
@@ -178,13 +215,20 @@ class Graphs:
 
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_hash_cloud.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         # if str(home_class) == "<class '__main__.User'>":
 
         #     plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/hash_cloud.png')
 
     def mention_word_cloud(mentions, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'mention_cloud_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         text = ''
 
@@ -203,7 +247,8 @@ class Graphs:
 
         media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
 
-        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
+        twitter_mask = np.array(Image.open(path.join(d, media_path +
+                                                     'twitter_icon.png')))
 
         wc = WordCloud(background_color='black',
                        max_words=2000,
@@ -218,13 +263,22 @@ class Graphs:
 
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_mention_cloud.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/mention_cloud.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def retweeted_word_cloud(retweeted, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'retweet_cloud_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         text = ''
 
@@ -243,7 +297,8 @@ class Graphs:
 
         media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
 
-        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
+        twitter_mask = np.array(Image.open(path.join(d, media_path +
+                                                     'twitter_icon.png')))
 
         wc = WordCloud(background_color='black',
                        max_words=2000,
@@ -258,19 +313,29 @@ class Graphs:
 
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_retweeted_cloud.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/retweeted_cloud.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def tweeted_word_cloud(words_string, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'word_cloud_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         d = path.dirname(__file__)
 
         media_path = '/home/nick/.virtualenvs/twitterbots/bots/img/'
 
-        twitter_mask = np.array(Image.open(path.join(d, media_path + 'twitter_icon.png')))
+        twitter_mask = np.array(Image.open(path.join(d, media_path +
+                                                     'twitter_icon.png')))
 
         wc = WordCloud(background_color='black',
                        max_words=2000,
@@ -288,13 +353,22 @@ class Graphs:
 
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_word_cloud.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/word_cloud.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def tweet_source_pie(source_list, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'source_pie_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         source_list.sort(key=lambda x: int(x[1]), reverse=True)
 
@@ -334,13 +408,22 @@ class Graphs:
         # plt.show()
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_source_pie.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/source_pie.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def retweet_pie(tweets, retweets, home_class):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'retweet_pie_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         labels = 'Tweets', 'Retweets'
         sizes = [tweets, retweets]
@@ -357,13 +440,22 @@ class Graphs:
         # plt.show()
         if str(home_class) == "<class '__main__.AllFriends'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/f_retweet_pie.png')
+            plt.savefig(path_ + 'f_' + name_)
+
+            return path_ + 'f_' + name_
 
         if str(home_class) == "<class 'personal.User'>":
 
-            plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/retweet_pie.png')
+            plt.savefig(path_ + name_)
+
+            return path_ + name_
 
     def geo_pie(on_count, off_count):
+
+        # for adding arbitrary numbers to filenames
+        name_nums = str(time.time())[-6:]
+        name_ = 'geolocation_' + name_nums + '.png'
+        path_ = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
 
         labels = 'On', 'Off'
         sizes = [on_count, off_count]
@@ -377,7 +469,9 @@ class Graphs:
                 shadow=True, startangle=90, colors=colors)
         ax1.axis('equal')
         # plt.show()
-        plt.savefig('/home/nick/.virtualenvs/twitterbots/bots/output/tmp/gelocation.png')
+        plt.savefig(path_ + name_)
+
+        return path_ + name_
 
 
 if __name__ == '__main__':

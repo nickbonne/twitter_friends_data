@@ -4,20 +4,43 @@ import re
 import os
 import json
 import time
+import shutil
 import tweepy
 import sqlite3
 
 from user_data import AllData
+from multiprocessing import Pool
+from multiprocessing import Lock
 from user_data import ScreenNames
 from request_process import Screen
 from tweet_collect import Collector
-from datetime import datetime as dt
+from multiprocessing import Process
 from configparser import ConfigParser
+from multiprocessing import current_process
 
 
 def main():
 
-    Actions.run_listener()
+    # Actions.run_listener()   # This is a process that needs to run constantly
+    # Actions.mention_check()  # This is a process that needs to run constantly
+    # Actions.run_collector()  # This is a process that needs to run constantly
+    Start.start_app()
+
+
+class Start:
+
+    def start_app():
+
+        process_one = Process(target=Actions.run_listener)
+        process_two = Process(target=Actions.run_collector)
+        process_three = Process(target=Actions.mention_check)
+
+        process_one.start()
+        process_two.start()
+        process_three.start()
+        process_one.join()
+        process_two.join()
+        process_three.join()
 
 
 class MyStreamListener(tweepy.StreamListener):
@@ -32,7 +55,8 @@ class MyStreamListener(tweepy.StreamListener):
 
     def on_data(self, data):
 
-        friend_ids = ScreenNames.screennames()
+        # does not start Screen process on tweets
+        # only adds to mentioned table.
 
         all_data = json.loads(data)
         tweet = all_data["text"]
@@ -52,15 +76,12 @@ class MyStreamListener(tweepy.StreamListener):
                       tweet_source,
                       user_id]
 
-        if user_id in friend_ids:
-
-            print('{}({}) - {}'.format(username, created_at, tweet))
-            print()
+        print('{}({}) - {}'.format(username, created_at, tweet))
+        print()
 
         if '@BonneNick' in tweet:
 
             Actions.add_mention_db(tweet_data)
-            Screen.is_command(tweet_data)
 
         return True
 
@@ -101,10 +122,24 @@ class Actions:
 
         return api
 
+    # Where tweets are actually logged into the tdump table
+    # tweets caught by listener only go into mentioned table
     def run_collector():
 
         Collector.collect()
+        AllData.user_database()
         CopyDb.copy_database()
+
+    # calls run_collector every 5 min
+    def collector_timer(lock):
+
+        while True:
+
+            time.sleep(300)
+
+            lock.acquire()
+            Actions.run_collector()
+            lock.release()
 
     def run_listener():
 
@@ -126,8 +161,37 @@ class Actions:
                 print(str(e) + '\n')
                 continue
 
-    # looks for any commands missed by listener
-    def check_db_cmds():
+    # called to add a tweet to mentioned table
+    def add_mention_db(tweet, lock):
+
+        lock = Lock()
+        db = Collector.mention_tweet_db()
+        c = db[0]
+        conn = db[1]
+
+        lock.acquire
+
+        c.execute('''INSERT INTO mentioned
+                             (tweet,
+                              username,
+                              tweet_date,
+                              tweet_id,
+                              tweet_source,
+                              user_id)
+                     VALUES(?,?,?,?,?,?)''',
+                  [tweet[0],
+                   tweet[1],
+                   tweet[2],
+                   tweet[3],
+                   tweet[4],
+                   tweet[5]])
+
+        conn.commit()
+        lock.release()
+
+    # looks for any tweets that mention me that were missed
+    # by the listener. Adds to mentioned table
+    def check_db_mention():
 
         filename = '/home/nick/.virtualenvs/twitterbots/bots/' +\
             'control_files/last_cmd_check.txt'
@@ -161,7 +225,6 @@ class Actions:
                tweet[3] not in mentioned_ids:
 
                 Actions.add_mention_db(tweet)
-                Screen.is_command(tweet)
 
         if len(new_tweets) > 0:
 
@@ -169,63 +232,108 @@ class Actions:
 
                 f.write(new_tweets[0][3])
 
-    def add_mention_db(tweet):
+    # looks for new mentions in mentioned table
+    # starts Screen process on matches
+    def mention_check():
 
-        db = Collector.mention_tweet_db()
-        c = db[0]
-        conn = db[1]
+        # placeholder file keeps from doing things twice
+        # if new mentions are found, calls Screen.is_command
+        # adds results of Screen.is_command to queue via
+        # add_2_queue
 
-        c.execute('''INSERT INTO mentioned
-                             (tweet,
-                              username,
-                              tweet_date,
-                              tweet_id,
-                              tweet_source,
-                              user_id)
-                     VALUES(?,?,?,?,?,?)''',
-                  [tweet[0],
-                   tweet[1],
-                   tweet[2],
-                   tweet[3],
-                   tweet[4],
-                   tweet[5]])
+        path = '/home/nick/.virtualenvs/twitterbots/bots/control_files/'
+        db_info = Actions.db_connect()
+        c = db_info[0]
 
-        conn.commit()
+        while True:
 
-    def requests_serve(tweet):
+            with open(path + 'last_mention.txt', 'r') as f:
 
-        request = Screen.is_command(tweet)
+                last_seen = int(f.read().strip())
 
-        # if False
-        if not request[0]:
+            c.execute('SELECT * FROM mentioned')
 
-            Actions.reply_request(tweet, request[1])
+            new_mentions = [x for x in c.fetchall()
+                            if int(x[3]) > last_seen]
 
-        elif request[0]:
+            try:
 
-            Actions.reply_request(tweet)
+                newest = max([int(x[3]) for x in new_mentions])
 
-    # for replying with a standard tweet
-    def reply_request(tweet_data, *args, **kwargs):
+                with open(path + 'last_mention.txt', 'w') as f:
 
-        api = Actions.get_api()
+                    f.write(str(newest))
 
-        username = tweet_data[1]
-        reply_id = tweet_data[2]
-        img = tweet_data[3]
-        message = username + ', here is the graphic you requested.'
+                twt_cmd_pairs = Screen.is_command(new_mentions)
 
-        if args:
+                if len(twt_cmd_pairs) > 1:
 
-            message = args
-            api.update_status(status=message,
-                              in_reply_to_status_id=reply_id)
+                    Actions.add_2_pool(twt_cmd_pairs)
+
+                elif len(twt_cmd_pairs) == 1:
+
+                    Actions.requests_serve(twt_cmd_pairs[0])
+                    print(current_process().name)
+
+            except Exception:
+
+                pass
+
+            time.sleep(45)
+
+    # Takes a list of tweets with commands, adds to pool
+    def add_2_pool(twt_cmd_pairs):
+
+        pool = Pool(4)
+        pool.map(Actions.requests_serve, twt_cmd_pairs)
+
+    def requests_serve(twt_cmd_pair):
+
+        tweet = twt_cmd_pair[0]
+        cmd = twt_cmd_pair[1]
+
+        if cmd == '--help':
+
+            Actions.reply_help(tweet)
 
         else:
 
-            api.update_with_media(img,
-                                  status=message,
-                                  in_reply_to_status_id=reply_id)
+            # name of file user wanted made
+            graphic_file = Screen.direct_request(tweet, cmd)
+
+            Actions.reply_request(tweet, graphic_file)
+
+    # for replying to command for graphic
+    def reply_request(tweet, file_):
+
+        api = Actions.get_api()
+
+        username = tweet[1]
+        reply_status_id = tweet[3]
+
+        message = username + ', here is the graphic you requested.'
+
+        api.update_with_media(file_,
+                              status=message,
+                              in_reply_to_status_id=reply_status_id)
+
+        time.sleep(5)
+        os.remove(file_)
+
+    # for replying to commands for help
+    def reply_help(tweet):
+
+        reply_status_id = tweet[3]
+        api = Actions.get_api()
+        path = '/home/nick/.virtualenvs/twitterbots/bots/control_files/'
+
+        with open(path + 'help_message.txt', 'r') as f:
+
+            help_message = f.read().strip()
+
+        api.update_status(status=help_message,
+                          in_reply_to_status_id=reply_status_id)
+
 
 
 class CopyDb:
@@ -238,8 +346,9 @@ class CopyDb:
 
             CopyDb.copy_database(path)
 
-    def copy_database(source_path):
+    def copy_database():
 
+        source_path = '/home/nick/.virtualenvs/twitterbots/bots/tweet_dump_main.db'
         dst = '/home/nick/.virtualenvs/twitterbots/bots/tweet_dump.db'
 
         shutil.copy2(source_path,
