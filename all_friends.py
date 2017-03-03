@@ -6,7 +6,7 @@ from mentions import Mentions
 from hashtags import Hashtags
 from retweets import Retweets
 from tweet_graphs import Graphs
-from user_data import AllData
+from user_data import DatabaseStats
 from phone_compare import Sources
 from datetime import datetime as dt
 from nltk.tokenize import TweetTokenizer
@@ -20,7 +20,6 @@ def main():
 class AllFriends:
 
     # get lists of all friend's tweets and retweets
-    # also earliest tweet and most recent
     def get_friend_statuses():
 
         # list of every tweet/retweet
@@ -29,30 +28,21 @@ class AllFriends:
                             key=lambda x: dt.strptime(x[2],
                                                       '%Y-%m-%d %H:%M:%S'))
 
-        # first and last
-        earliest = everything[0]
-        latest = everything[-1]
+        return everything
 
-        return (everything,
-                earliest,
-                latest)
-
+    # just tweets
     def get_friends_tweets():
 
         return Tweets.get_all_tweets()
 
+    # just retweets
     def get_friends_retweets():
 
         return Retweets.get_all_retweets()
 
-    def get_friends_data():
-
-        pass
-
-        # not sure if i need this anymore
-
     # checks database for new entries, appends text files
-    # tracking tweets, hashtags, or mentions
+    # tracking tweets, retweeted users, hashtags, or mentions
+    # running for first time on 200k+ entries took well over an hour
     def update_cloud_strings_only_tweets(tweet_list):
 
         # Folder where text files containing
@@ -237,6 +227,8 @@ class AllFriends:
 
             f.write(retweet_string)
 
+    # text files maintained by above functions read
+    # into strings and used to create word clouds
     def create_tweet_word_cloud():
 
         path = '/home/nick/.virtualenvs/twitterbots/bots/control_files/'
@@ -247,7 +239,7 @@ class AllFriends:
 
         tweet_string = tweet_string.strip()
 
-        Graphs.tweeted_word_cloud(tweet_string, __class__)
+        return Graphs.tweeted_word_cloud(tweet_string, __class__)
 
     def create_retweet_cloud():
 
@@ -259,7 +251,7 @@ class AllFriends:
 
         retweet_string = retweet_string.strip()
 
-        Graphs.retweeted_word_cloud(retweet_string, __class__)
+        return Graphs.retweeted_word_cloud(retweet_string, __class__)
 
     def create_hashtag_cloud():
 
@@ -271,7 +263,7 @@ class AllFriends:
 
         hashtag_string = hashtag_string.strip()
 
-        Graphs.hashtag_word_cloud(hashtag_string, __class__)
+        return Graphs.hashtag_word_cloud(hashtag_string, __class__)
 
     def create_mention_cloud():
 
@@ -283,43 +275,50 @@ class AllFriends:
 
         mention_string = mention_string.strip()
 
-        Graphs.mention_word_cloud(mention_string, __class__)
+        return Graphs.mention_word_cloud(mention_string, __class__)
 
+    # who has geolocation enabled and who doesn't
     def create_geo_pie():
 
-        geo_data = AllData.geo_on_off()
+        geo_data = DatabaseStats.geo_on_off()
         true_count, false_count = geo_data[0], geo_data[1]
-        Graphs.geo_pie(true_count, false_count)
+        return Graphs.geo_pie(true_count, false_count)
 
+    # which apps are being used to send tweets
     def create_source_pie():
 
         source_list = Sources.get_all_sources()
         source_count = Sources.counted_sources(source_list)
-        Graphs.tweet_source_pie(source_count, __class__)
+        return Graphs.tweet_source_pie(source_count, __class__)
 
+    # makeup of database when looking at regular
+    # tweets versuses retweets
     def create_retweet_pie(tweet_list, retweet_list):
 
         tweets = len(tweet_list)
         retweets = len(retweet_list)
-        Graphs.retweet_pie(tweets, retweets, __class__)
+
+        return Graphs.retweet_pie(tweets, retweets, __class__)
 
     # All tweets plotted in 24 hour period
     def create_aio_plot(tweet_list):
 
         graph_coords = Tweets.tweets_per_minute(tweet_list)
         graph_coords.sort(key=lambda x: int(x[1]), reverse=True)
-        Graphs.all_in_one(graph_coords, __class__)
 
-    # !!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!
-    # probably needs Tweets.tweets_per_date
-    # changed to AllTweets.all_tweet_per_date
+        return Graphs.all_in_one(graph_coords, __class__)
+
+    # Total number of statuses sent each day
+    # on a scatter plot
     def create_per_day_plot(tweet_list):
 
-        graph_coords = Tweets.tweets_per_date(tweet_list)
+        graph_coords = AllTweets.all_tweets_per_date(tweet_list)
         graph_coords.sort(key=lambda x: int(x[1]), reverse=True)
-        Graphs.total_tweets_per_day(graph_coords, __class__)
 
+        return Graphs.total_tweets_per_day(graph_coords, __class__)
+
+    # looks the same as aio plot but two sets
+    # of data are graphed, regular tweets and retweets
     def create_rtvt_aio_plot(tweet_list, retweet_list):
 
         tweet_coords = Tweets.tweets_per_minute(tweet_list)
@@ -328,7 +327,9 @@ class AllFriends:
         tweet_coords.sort(key=lambda x: int(x[1]), reverse=True)
         retweet_coords.sort(key=lambda x: int(x[1]), reverse=True)
 
-        Graphs.rtwt_vs_twt_24h(retweet_coords, tweet_coords, __class__)
+        return Graphs.rtwt_vs_twt_24h(retweet_coords,
+                                      tweet_coords,
+                                      __class__)
 
 # More graphs?
 

@@ -305,19 +305,20 @@ class User:
     def create_tweet_cloud(self, tweets):
 
         word_string = Tweets.tweeted_words(tweets)
-        Graphs.tweeted_word_cloud(word_string, __class__)
+
+        return Graphs.tweeted_word_cloud(word_string, __class__)
 
     def create_retweet_pie(self, tweets, retweets):
 
         Graphs.retweet_pie(len(tweets), len(retweets), __class__)
 
-    def create_aio_plot(self, statuses):
 
         graph_coords = AllTweets.all_tweets_per_minute(statuses)
         graph_coords = sorted(graph_coords,
                               key=lambda x: int(x[1]),
                               reverse=True)
-        Graphs.all_in_one(graph_coords, __class__)
+
+        return Graphs.all_in_one(graph_coords, __class__)
 
     # not users may request this, not enough data on
     # any one of them, perhaps @ 10k statuses in db
@@ -329,7 +330,7 @@ class User:
         tweet_coords.sort(key=lambda x: int(x[1]), reverse=True)
         retweet_coords.sort(key=lambda x: int(x[1]), reverse=True)
 
-        Graphs.rtwt_vs_twt_24h(retweet_coords, tweet_coords, __class__)
+        return Graphs.rtwt_vs_twt_24h(retweet_coords, tweet_coords, __class__)
 
     # statuses per day since beginning of database
     def create_per_day_plot(self, statuses):
@@ -338,7 +339,8 @@ class User:
         graph_coords = sorted(graph_coords,
                               key=lambda x: int(x[1]),
                               reverse=True)
-        Graphs.total_tweets_per_day(graph_coords, __class__)
+
+        return Graphs.total_tweets_per_day(graph_coords, __class__)
 
     def create_source_pie(self, statuses):
 
@@ -347,7 +349,8 @@ class User:
         graph_coords = sorted(graph_coords,
                               key=lambda x: int(x[1]),
                               reverse=True)
-        Graphs.tweet_source_pie(graph_coords, __class__)
+
+        return Graphs.tweet_source_pie(graph_coords, __class__)
 
     def create_stat_box(self, stat_strings):
 

@@ -5,7 +5,7 @@ import tweepy
 import sqlite3
 
 from configparser import ConfigParser
-from cloud_string_updater import Update
+
 '''
 A little OOP would be good later for
 authenticated user data, c, conn, api
@@ -37,9 +37,6 @@ class Collector:
         # Checks timelines of everyone in db already
         # adds anything new to db
         Collector.download_recent(api, c, conn, last_list)
-
-        # Updates text files for faster word cloud creation
-        Collector.cloud_str_update()
 
     def get_api():
 
@@ -154,6 +151,10 @@ class Collector:
 
                 oldest = new_tweets[-1].id - 1
 
+        if len(new_tweets) != 0:
+
+            print('Insert Active')
+
         for tweet in new_tweets:
 
             c.execute('''INSERT INTO tdump
@@ -173,11 +174,19 @@ class Collector:
 
         conn.commit()
 
+        if len(new_tweets) != 0:
+
+            print('Insert Done' + '\n')
+
     # simply check if tweet text contains my screen name
     # change from hard code later
     def mention_me(new_tweet_list, c, conn):
 
         mentioned = [x for x in new_tweet_list if '@BonneNick' in x[0]]
+
+        if len(new_tweet_list) != 0:
+
+            print('Insert Active')
 
         for tweet in mentioned:
 
@@ -197,6 +206,10 @@ class Collector:
                        tweet.user.id_str])
 
         conn.commit()
+
+        if len(new_tweet_list) != 0:
+
+            print('Insert Done' + '\n')
 
     # returns list of user_id and created_at pairs
     # date associated with user_id is date of last
@@ -272,6 +285,10 @@ class Collector:
 
                         continue
 
+        if len(new_tweets) != 0:
+
+            print('Insert Active')
+
         for tweet in new_tweets:
 
             if tweet.user.screen_name != 'BonneNick' \
@@ -293,10 +310,11 @@ class Collector:
                            tweet.user.id_str])
 
         conn.commit()
+        conn.close()
 
-    def cloud_str_update():
+        if len(new_tweets) != 0:
 
-        Update.update()
+            print('Insert Done' + '\n')
 
 
 if __name__ == '__main__':

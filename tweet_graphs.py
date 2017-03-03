@@ -106,7 +106,6 @@ class Graphs:
         matplotlib.pyplot.plot_date(x_coord, y_coord)
         plt.plot(x_coord, np.poly1d(np.polyfit(x_coord, y_coord, 1))(x_coord))
 
-        # plt.show()
         if str(home_class) == "<class 'all_friends.AllFriends'>":
 
             plt.savefig(path_ + 'f_' + name_)
@@ -442,11 +441,15 @@ class Graphs:
 
             plt.savefig(path_ + 'f_' + name_)
 
+            print(path_ + 'f_' + name_ + 'x')
+
             return path_ + 'f_' + name_
+
 
         if str(home_class) == "<class 'personal.User'>":
 
             plt.savefig(path_ + name_)
+
 
             return path_ + name_
 

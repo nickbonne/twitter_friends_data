@@ -13,14 +13,7 @@ for fixing tweet times to a users local time
 
 def main():
 
-    tweet = ['Okay, I\'ll bite @BonneNick --user_statbox',
-             'jhudddd',
-             '2017-02-02 22:45:54',
-             '827286951837458433',
-             'Twitter for iPhone',
-             '61561677']
-
-    Screen.is_command(tweet)
+    pass
 
 
 class Screen:
@@ -58,7 +51,8 @@ class Screen:
 
             try:
 
-                cmd = [x for x in split_tweet if x in commands][0]
+                cmd = [x for x in split_tweet
+                       if x.rstrip('?:!.,;') in commands][0]
 
             except IndexError:
 
@@ -77,6 +71,7 @@ class Screen:
 
         return twt_cmd_pairs
 
+    # sends tweet info to funct matcing command
     def direct_request(tweet, cmd):
 
         if cmd[:7] == '--user_':
@@ -103,7 +98,7 @@ class Screen:
 
             elif cmd == '--user_usage':
 
-                result = UserGraphic.usage(tweet)
+                result = UserGraphic.per_day(tweet)
 
         elif cmd[:6] == '--all_':
 
@@ -153,6 +148,7 @@ class Screen:
 
         return result
 
+    # handling for the --help command
     def help(tweet, *args):
 
         path = '/home/nick/.virtualenvs/twitterbots/bots/control_files/'
@@ -172,94 +168,66 @@ class Screen:
         return tweet, help_message
 
 
+'''
+
+Two classes below have functions that call functions from
+tweet_graphs.py to create the graphic the user requested.
+
+The path of the resulting file is returned.
+
+UserGraphic class' fucntions need tweet variable because the
+user data needed to create the graphic resides there.
+
+'''
+
+
 class AllGraphic:
 
     def tweet_cloud():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_word_cloud'
-        AllFriends.create_tweet_word_cloud()
-
-        return path + filename
+        return AllFriends.create_tweet_word_cloud()
 
     def hash_cloud():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_hash_cloud'
-        AllFriends.create_hashtag_cloud()
-
-        return path + filename
+        return AllFriends.create_hashtag_cloud()
 
     def mention_cloud():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_mention_cloud'
-        AllFriends.create_mention_cloud()
-
-        return path + filename
+        return AllFriends.create_mention_cloud()
 
     def rt_cloud():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_rt_cloud'
-        AllFriends.create_retweet_cloud()
-
-        return path + filename
+        return AllFriends.create_retweet_cloud()
 
     def aio():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_aio'
-        AllFriends.create_aio_plot(AllFriends.get_friend_statuses()[0])
-
-        return path + filename
+        return AllFriends.create_aio_plot(AllFriends.get_friend_statuses()[0])
 
     def rtvt_aio():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_rtvt_aio'
-        AllFriends.create_rtvt_aio_plot(AllFriends.get_friends_tweets(),
-                                        AllFriends.get_friends_retweets())
-
-        return path + filename
+        return AllFriends.create_rtvt_aio_plot(AllFriends.get_friends_tweets(),
+                                            AllFriends.get_friends_retweets())
 
     def per_day():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_per_day'
-        AllFriends.create_per_day_plot(AllFriends.get_friends_tweets())
-
-        return path + filename
+        return AllFriends.create_per_day_plot(AllFriends.get_friends_tweets())
 
     def sources():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_source_pie'
-        AllFriends.create_source_pie()
-
-        return path + filename
+        return AllFriends.create_source_pie()
 
     def geo():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'geolocation'
-        AllFriends.create_geo_pie()
-
-        return path + filename
+        return AllFriends.create_geo_pie()
 
     def retweet_pie():
 
-        path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
-        filename = 'f_retweet_pie'
-        AllFriends.create_retweet_pie(AllFriends.get_friends_tweets(),
-                                      AllFriends.get_friends_retweets())
-
-        return path + filename
+        return AllFriends.create_retweet_pie(AllFriends.get_friends_tweets(),
+                                             AllFriends.get_friends_retweets())
 
 
-# tweet already contains user_id
-# isolate var and call tz_fix before
-# passing list of tweets on
+# Not as many options because of lack of data
+# points on individual users.
 class UserGraphic:
 
     def statbox(tweet):
@@ -338,7 +306,7 @@ class UserGraphic:
 
         return path + filename
 
-    def usage(tweet):
+    def per_day(tweet):
 
         path = '/home/nick/.virtualenvs/twitterbots/bots/output/tmp/'
         filename = 'per_day.png'

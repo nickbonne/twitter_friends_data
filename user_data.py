@@ -3,7 +3,13 @@
 import re
 import tweepy
 import sqlite3
+import datetime
 
+from tweets import AllTweets
+from hashtags import Hashtags
+from retweets import Retweets
+from mentions import Mentions
+from datetime import datetime as dt
 from configparser import ConfigParser
 
 
@@ -12,24 +18,10 @@ def main():
     pass
 
 
-class Stats:
-
-    def all_statistics():
-
-        return [AllData.oldest_user(),
-                AllData.newest_user(),
-                AllData.tweet_average(),
-                AllData.friends_2_followers(),
-                AllData.most_friends(),
-                AllData.most_followers(),
-                AllData.geo_on_off(),
-                ScreenNames.length(),
-                ScreenNames.all_alpha(),
-                ScreenNames.digits(),
-                ScreenNames.underscore_division()]
-
-
-class AllData:
+# results of functions in this class take inputs
+# from data from Twitter about users with entries
+# in db such as their total status count or # of followers
+class UserData:
 
     # function will be used to create and update
     # hence the usage of CREATE, and inclusion
@@ -52,7 +44,7 @@ class AllData:
         auth.set_access_token(access_token, access_token_secret)
         api = tweepy.API(auth, wait_on_rate_limit=True)
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''CREATE TABLE IF NOT EXISTS user_data
@@ -63,95 +55,95 @@ class AllData:
                       friends INTEGER,
                       followers INTEGER,
                       geoloc TEXT,
-                      utc_offset INTEGER)''')
+                      utc_offset INTEGER,
+                      db_entries INTEGER)''')
 
         c.execute('SELECT user_id FROM tdump')
-        users = [x[0] for x in set(c.fetchall())]
+        users = sorted([int(x[0]) for x in set(c.fetchall())])
 
         c.execute('SELECT user_id from user_data')
-        tracked_users = [x[0] for x in set(c.fetchall())]
+        tracked_users = sorted([int(x[0]) for x in set(c.fetchall())])
+
+        print('Insert Active')
 
         for user in users:
 
-            if user not in tracked_users:
+            try:
 
                 user_object = api.get_user(user)
 
-                # id number
-                user_id_ = user
+                c.execute('''SELECT COUNT(*)
+                             FROM tdump
+                             WHERE user_id=?''',
+                          [user_object.id_str])
+                status_count = c.fetchone()[0]
 
-                # "TwitterUser10"
-                user = user_object.screen_name
-
-                # datetime object
-                user_created = user_object.created_at
-
-                # number of
-                user_follwers = user_object.followers_count
-                user_friends = user_object.friends_count
-
-                # total tweets since account created
-                user_statuses = user_object.statuses_count
-
-                # chance to get lat/long from status object
+                # get lat/long from status object
+                # 1 if enabled, 0 if not
                 user_geo = user_object.geo_enabled
 
                 # utc time offset
                 user_utc = user_object.utc_offset
 
-                c.execute('''INSERT INTO user_data
-                             VALUES (?,?,?,?,?,?,?,?)''',
-                          [user,
-                           user_id_,
-                           user_created,
-                           user_statuses,
-                           user_friends,
-                           user_follwers,
-                           user_geo,
-                           user_utc])
+                if user_utc is None:
 
-            else:
+                    user_utc = 0
 
-                user_object = api.get_user(user)
+                if int(user_object.id_str) in tracked_users:
 
-                # id number
-                user_id_ = user
+                    c.execute('''UPDATE user_data
+                                 SET username=?,
+                                     user_id=?,
+                                     account_date=?,
+                                     statuses=?,
+                                     friends=?,
+                                     followers=?,
+                                     geoloc=?,
+                                     utc_offset=?,
+                                     db_entries=?
+                                 WHERE user_id=?
+                                     ''',
+                              [user_object.screen_name,     # "TwitterUser10"
+                               user_object.id_str,          # '2435547867865'
+                               user_object.created_at,      # datetime object
+                               user_object.statuses_count,  # total tweets
+                               user_object.friends_count,   # number of
+                               user_object.followers_count,
+                               user_geo,
+                               user_utc,
+                               status_count,
+                               int(user_object.id_str)])
 
-                # "TwitterUser10"
-                user = user_object.screen_name
+                else:
 
-                # datetime object
-                user_created = user_object.created_at
+                    c.execute('''INSERT INTO user_data
+                                 VALUES (?,?,?,?,?,?,?,?,?)''',
+                              [user_object.screen_name,
+                               user_object.id_str,
+                               user_object.created_at,
+                               user_object.statuses_count,
+                               user_object.friends_count,
+                               user_object.followers_count,
+                               user_geo,
+                               user_utc,
+                               status_count])
 
-                # number of
-                user_follwers = user_object.followers_count
-                user_friends = user_object.friends_count
+            # if error occurs getting user, just skip
+            # will try again next time
+            except Exception as e:
 
-                # total tweets since account created
-                user_statuses = user_object.statuses_count
-
-                # chance to get lat/long from status object
-                user_geo = user_object.geo_enabled
-
-                # utc time offset
-                user_utc = user_object.utc_offset
-
-                c.execute('''INSERT INTO user_data
-                             VALUES (?,?,?,?,?,?,?,?)''',
-                          [user,
-                           user_id_,
-                           user_created,
-                           user_statuses,
-                           user_friends,
-                           user_follwers,
-                           user_geo,
-                           user_utc])
+                print(str(e) + '\n')
+                continue
 
         conn.commit()
+        conn.close()
+        print('Insert Done' + '\n')
 
+    # returns list of id strings
+    # of users in friends list
     def friend_ids():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''SELECT user_id FROM user_data''')
@@ -159,9 +151,11 @@ class AllData:
 
         return user_ids
 
+    # returns user with oldest account
+    # creation date
     def oldest_user():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''SELECT username
@@ -171,9 +165,10 @@ class AllData:
 
         return user
 
+    # user with most recent creation date
     def newest_user():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''SELECT username
@@ -183,9 +178,11 @@ class AllData:
 
         return user
 
+    # total lifetime status counts taken from
+    # Twitter then averaged
     def tweet_average():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''SELECT statuses FROM user_data''')
@@ -193,9 +190,11 @@ class AllData:
 
         return sum(statuses) / len(statuses)
 
+    # returns average number of
+    # friends and followers of users in db
     def friends_2_followers():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''SELECT friends, followers FROM user_data''')
@@ -211,7 +210,7 @@ class AllData:
 
     def most_friends():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''SELECT username, friends FROM user_data''')
@@ -222,7 +221,7 @@ class AllData:
 
     def most_followers():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('''SELECT username, followers FROM user_data''')
@@ -231,9 +230,81 @@ class AllData:
 
         return most_followers
 
+
+# as class name indicates, everthing here gets its
+# numbers and results from statuses in the db
+class DatabaseStats:
+
+    def total_statuses():
+
+        total = len(AllTweets.get_all_tweets())
+
+        return 'Total statuses in database {}'.format(str(total))
+
+    def total_retweets():
+
+        total = len(Retweets.get_all_retweets())
+
+        return 'Total retweets in database {}'.format(str(total))
+
+    # only counted if doesn't occur in retweet
+    # return total number and total unique
+    def hashtags():
+
+        totals = Hashtags.get_user_hashtags(Hashtags.get_all_tweets())
+
+        return ('Total hashtags used {}'.format(str(len(totals[0]))),
+                'Total unique hashtags {}'.format(str(len(totals[1]))))
+
+    # only counted if token preceeding mention
+    # is not 'rt'.
+    def users_mentioned():
+
+        totals = Mentions.users_mentioned(AllTweets.get_all_tweets())
+
+        return ('Total users mentioned {}'.format(str(len(totals[0]))),
+                'Total unique mentions {}'.format(str(len(totals[1]))))
+
+    def avg_statuses():
+
+        conn = sqlite3.connect('tweet_dump_main.db')
+        c = conn.cursor()
+
+        c.execute('SELECT COUNT(*)  FROM user_data')
+        num_of_users = c.fetchone()[0]
+
+        c.execute('SELECT COUNT(*) FROM tdump')
+        total_statuses = c.fetchone()[0]
+
+        return int(round(total_statuses / num_of_users, 0))
+
+    def most_statuses():
+
+        conn = sqlite3.connect('tweet_dump_main.db')
+        c = conn.cursor()
+
+        c.execute('''SELECT db_entries
+                     FROM user_data
+                     ORDER BY db_entries DESC''')
+
+        return c.fetchone()[0]
+
+    def least_statuses():
+
+        conn = sqlite3.connect('tweet_dump_main.db')
+        c = conn.cursor()
+
+        c.execute('''SELECT db_entries
+                     FROM user_data
+                     ORDER BY db_entries ASC''')
+
+        return c.fetchone()[0]
+
+    # gets number of users who have
+    # geolocation enabled
     def geo_on_off():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('SELECT geoloc FROM user_data')
@@ -245,12 +316,54 @@ class AllData:
 
         return geo_on, geo_off
 
+    # use to create graphic
+    def quarter_activity():
 
+        activity = []
+
+        for i in range(1, 91):
+
+            activity.append((i, DatabaseStats.active_in_last(i)))
+
+        return activity
+
+    def all_statuses_in_last(days_):
+
+        today = dt.today()
+        past_date = today - datetime.timedelta(days=days_)
+
+        conn = sqlite3.connect('tweet_dump_main.db')
+        c = conn.cursor()
+
+        c.execute('''SELECT *
+                     FROM tdump
+                     WHERE tweet_date>?
+                     ORDER BY tweet_date DESC''',
+                  [past_date])
+        tweets = c.fetchall()
+
+        return len(tweets)
+
+    def most_one_day():
+
+        tweets = AllTweets.get_all_tweets()
+        day_counts = AllTweets.all_tweets_per_date(tweets)
+        day_counts = sorted(day_counts,
+                            key=lambda x: int(x[1]),
+                            reverse=True)
+
+        return day_counts[0]
+
+
+# going to do something to visualize how
+# screennames are composed
 class ScreenNames:
 
+    # returns list of screennames
+    # probably don't need set() in there
     def screennames():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('SELECT user_id FROM user_data')
@@ -261,7 +374,7 @@ class ScreenNames:
 
     def length():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('SELECT username FROM user_data')
@@ -276,9 +389,10 @@ class ScreenNames:
 
         return avg_length, longest, shortest
 
+    # no symbols or numbers in name
     def all_alpha():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('SELECT username FROM user_data')
@@ -304,7 +418,7 @@ class ScreenNames:
 
     def digits():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('SELECT username FROM user_data')
@@ -328,7 +442,7 @@ class ScreenNames:
 
     def underscore_division():
 
-        conn = sqlite3.connect('tweet_dump.db')
+        conn = sqlite3.connect('tweet_dump_main.db')
         c = conn.cursor()
 
         c.execute('SELECT username FROM user_data')

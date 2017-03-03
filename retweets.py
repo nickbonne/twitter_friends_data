@@ -51,6 +51,31 @@ class Retweets:
 
         return all_retweets
 
+    def extract_retweets(tweet_list):
+
+        # inital list of retweets
+        # more added after tokenization
+        retweet_list = [i for i in tweet_list if
+                        i[0][:2] == 'RT']
+
+        # now the list to be tokenized
+        tweet_list = [i for i in tweet_list if
+                      i[0][:2] != 'RT']
+
+        twt_token = TweetTokenizer()
+
+        for tweet in tweet_list:
+
+            tokenized_twt = twt_token.tokenize(tweet[0])
+
+            for token in tokenized_twt:
+
+                if token.upper() == 'RT':
+
+                    retweet_list.append(tweet)
+
+        return retweet_list
+
     def get_user_retweets(user, retweet_list):
 
         user_retweets = [i for i in retweet_list if

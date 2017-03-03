@@ -1,17 +1,13 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
 
 import sqlite3
+
 from nltk.tokenize import TweetTokenizer
 
 
 def main():
 
-    all_tweets = Hashtags.get_all_tweets()
-    # all_hashtags = Hashtags.get_all_hashtags(all_tweets)
-    user_hashtags = Hashtags.get_user_hashtags('jhudddd', all_tweets)
-    counted_tags = Hashtags.count_hashtags(user_hashtags[0])
-
-    print(counted_tags)
+    pass
 
 
 class Hashtags:
@@ -31,6 +27,7 @@ class Hashtags:
 
         return all_tweets
 
+    # finds all hashtags, not excluding retweeted tags
     def get_all_hashtags(tweet_list):
 
         all_tweets = [i[0] for i in tweet_list]
@@ -48,6 +45,7 @@ class Hashtags:
 
         return hashtags
 
+    # tags in retweets are omitted
     def get_user_hashtags(tweet_list):
 
         # user_tweets = [i for i in tweet_list if

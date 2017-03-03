@@ -1,6 +1,7 @@
 #!/home/nick/.virtualenvs/twitterbots/bin/python3.5
 
 import sqlite3
+
 from nltk.tokenize import TweetTokenizer
 
 '''
