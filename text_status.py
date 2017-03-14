@@ -171,7 +171,17 @@ class Messages:
     def active(days_):
 
         result = TextFuncts.active(days_)
-        msg = '{} of friends tweeted at least once last week'.format(result)
+
+        if days_ == 7:
+
+            days_ == 'week'
+
+        elif days_ ==30:
+
+            days_ == 'month'
+
+        msg = '{} of friends tweeted at least once last {}'.format(result,
+                                                                   days)
 
         return msg
 
@@ -187,17 +197,17 @@ class Messages:
 
             days_ = 'month'
 
-        msg = '''Top 3 hashtags last {}
+        msg = '''Top 3 hashtags used last {}:
 
-     {} {}
-     {} {}
-     {} {}'''.format(days_,
-                     result[0][0],
-                     result[0][1],
-                     result[1][0],
-                     result[1][1],
-                     result[2][0],
-                     result[2][1])
+     {} {} times
+     {} {} times
+     {} {} times'''.format(days_,
+                           result[0][0],
+                           result[0][1],
+                           result[1][0],
+                           result[1][1],
+                           result[2][0],
+                           result[2][1])
 
         return msg
 
@@ -213,17 +223,17 @@ class Messages:
 
             days_ = 'month'
 
-        msg = '''Top 3 retweeted users last {}
+        msg = '''Top 3 users retweeted by friends last {}:
 
-     {} {}
-     {} {}
-     {} {}'''.format(days_,
-                     result[0][0],
-                     result[0][1],
-                     result[1][0],
-                     result[1][1],
-                     result[2][0],
-                     result[2][1])
+     {} {} times
+     {} {} times
+     {} {} times'''.format(days_,
+                           result[0][0],
+                           result[0][1],
+                           result[1][0],
+                           result[1][1],
+                           result[2][0],
+                           result[2][1])
 
         return msg
 
@@ -239,17 +249,17 @@ class Messages:
 
             days_ = 'month'
 
-        msg = '''Top 3 most mentioned last {}
+        msg = '''Top 3 most mentioned last {}:
 
-     {} {}
-     {} {}
-     {} {}'''.format(days_,
-                     result[0][0],
-                     result[0][1],
-                     result[1][0],
-                     result[1][1],
-                     result[2][0],
-                     result[2][1])
+     {} {} times
+     {} {} times
+     {} {} times'''.format(days_,
+                           result[0][0],
+                           result[0][1],
+                           result[1][0],
+                           result[1][1],
+                           result[2][0],
+                           result[2][1])
 
         return msg
 
@@ -265,17 +275,17 @@ class Messages:
 
             days_ = 'month'
 
-        msg = '''Top 3 most tweets sent last {}
+        msg = '''Top 3 most tweets sent last {}:
 
-     @{} {}
-     @{} {}
-     @{} {}'''.format(days_,
-                      result[0][0],
-                      result[0][1],
-                      result[1][0],
-                      result[1][1],
-                      result[2][0],
-                      result[2][1])
+     @{} {} tweets
+     @{} {} tweets
+     @{} {} tweets'''.format(days_,
+                             result[0][0],
+                             result[0][1],
+                             result[1][0],
+                             result[1][1],
+                             result[2][0],
+                             result[2][1])
 
         return msg
 

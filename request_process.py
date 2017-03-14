@@ -201,12 +201,21 @@ class AllGraphic:
 
     def aio():
 
-        return AllFriends.create_aio_plot(AllFriends.get_friend_statuses()[0])
+        statuses = TimeFix.adjust_datetimes('1413240876',
+                                            AllFriends.get_friend_statuses()[0])
+
+        return AllFriends.create_aio_plot(statuses)
 
     def rtvt_aio():
 
-        return AllFriends.create_rtvt_aio_plot(AllFriends.get_friends_tweets(),
+        tweets = TimeFix.adjust_datetimes('1413240876',
+                                          AllFriends.get_friends_tweets())
+
+        retweets = TimeFix.adjust_datetimes('1413240876',
                                             AllFriends.get_friends_retweets())
+
+        return AllFriends.create_rtvt_aio_plot(tweets,
+                                               retweets)
 
     def per_day():
 

@@ -99,7 +99,8 @@ class MyStreamListener(tweepy.StreamListener):
 
                     AutoReply.check_4_id(Actions.get_api(),
                                          reply_id,
-                                         tweet_id)
+                                         tweet_id,
+                                         username)
 
             else:
 
@@ -194,6 +195,8 @@ class Actions:
     # called to add a tweet to mentioned table
     def add_mention_db(tweet):
 
+        print(tweet)
+
         lock = Lock()
         db = Collector.mention_tweet_db()
         c = db[0]
@@ -256,6 +259,8 @@ class Actions:
             if '@BonneNick' in tweet[0] and \
                tweet[3] not in mentioned_ids:
 
+                tweet = list(tweet)
+                tweet.append(None)
                 Actions.add_mention_db(tweet)
 
         if len(new_tweets) > 0:
@@ -380,18 +385,21 @@ class Actions:
         status = RandomStatus.random_post()
         api = Actions.get_api()
 
-        if status is list:
+        if type(status) is list(status):
 
             tweet = api.update_with_media(status[0], status=status[1])
             time.sleep(5)
             os.remove(status[0])
 
-        elif status is str:
+            c.execute('INSERT INTO autolog VALUES(?)', [tweet.id])
+            conn.commit()
+
+        elif type(status) is str:
 
             tweet = api.update_status(status=status)
 
-        c.execute('INSERT INTO autolog VALUES(?)', [tweet.id])
-        conn.commit()
+            c.execute('INSERT INTO autolog(tweet) VALUES(?)', [tweet.id])
+            conn.commit()
 
     # sends a random --all graphic every Friday
     # if the hour is 10p, uses txt file to log activity
@@ -400,6 +408,7 @@ class Actions:
         d = dt.now()
         hour = dt.strftime(d, '%H')
         d = d.isoweekday()
+        days = [2, 5]
 
         path = '/home/nick/.virtualenvs/twitterbots/bots/'\
                'control_files/auto_status.txt'
@@ -407,9 +416,9 @@ class Actions:
         with open(path, 'r') as f:
             sent = f.read().strip()
 
-        # if day = Friday and hour = 8pm
+        # if day is  Tuesday or Friday and hour = 8pm
         # and if control file says 'False'
-        if int(d) == 5 and str(sent) == 'False' and int(hour) == 20:
+        if int(d) in days and str(sent) == 'False' and int(hour) == 20:
 
             Actions.auto_status()
             with open(path, 'w') as f:
@@ -417,7 +426,7 @@ class Actions:
 
         # once friday's 8pm hour passes control
         # file changed back to 'False'
-        elif str(d) != 5 or int(hour) != 20:
+        elif int(hour) != 20:
 
             with open(path, 'w') as f:
 
